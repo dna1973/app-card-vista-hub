@@ -10,6 +10,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const { signIn, signUp, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -47,8 +48,15 @@ const Auth = () => {
   };
 
   const handleRefreshStatus = async () => {
-    await refreshProfile();
-    toast.success('Status atualizado!');
+    setRefreshError(null);
+    try {
+      await refreshProfile();
+      toast.success('Status atualizado!');
+    } catch (err: any) {
+      setRefreshError('Falha ao atualizar status do perfil.');
+      toast.error('Falha ao atualizar status do perfil.');
+      console.error('Erro durante refreshProfile:', err);
+    }
   };
 
   if (user && !profile?.is_approved) {
@@ -61,6 +69,9 @@ const Auth = () => {
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Sua conta foi criada com sucesso, mas precisa ser aprovada por um administrador antes que você possa acessar o sistema.
           </p>
+          {refreshError && (
+            <div className="text-red-600 dark:text-red-400 mb-3">{refreshError}</div>
+          )}
           <div className="space-y-4">
             <Button onClick={handleRefreshStatus} variant="outline" className="w-full">
               Verificar Status
@@ -71,6 +82,9 @@ const Auth = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Admin: {profile?.is_admin ? 'Sim' : 'Não'}
             </p>
+          </div>
+          <div className="mt-6 text-left text-xs text-gray-400">
+            Se atualizou pelo Supabase e mesmo assim permanece travado, confira as permissões do banco (RLS/regras da tabela <b>profiles</b>) e os logs no console.
           </div>
         </div>
       </div>
