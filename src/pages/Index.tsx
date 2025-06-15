@@ -1,64 +1,165 @@
 
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { AppCard } from "@/components/AppCard";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import { LogOut, Settings } from 'lucide-react';
 
-const apps = [
-  {
-    id: 1,
-    name: "TaskFlow Pro",
-    description: "Gerenciador de tarefas intuitivo com colaboração em tempo real e análise de produtividade avançada.",
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop&crop=center",
-    link: "https://taskflow-pro.com"
-  },
-  {
-    id: 2,
-    name: "DataViz Studio",
-    description: "Plataforma de visualização de dados com dashboards interativos e relatórios personalizáveis.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop&crop=center",
-    link: "https://dataviz-studio.com"
-  },
-  {
-    id: 3,
-    name: "CloudSync",
-    description: "Solução de sincronização de arquivos na nuvem com criptografia de ponta a ponta e backup automático.",
-    image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=300&fit=crop&crop=center",
-    link: "https://cloudsync-app.com"
-  },
-  {
-    id: 4,
-    name: "CodeMentor AI",
-    description: "Assistente de programação com IA que oferece sugestões de código e revisão automática.",
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop&crop=center",
-    link: "https://codementor-ai.com"
-  },
-  {
-    id: 5,
-    name: "EcoTracker",
-    description: "Aplicativo de sustentabilidade para monitorar pegada de carbono e adotar práticas eco-friendly.",
-    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=300&fit=crop&crop=center",
-    link: "https://ecotracker-app.com"
-  },
-  {
-    id: 6,
-    name: "FitnessPro",
-    description: "Plataforma completa de fitness com treinos personalizados, nutrição e acompanhamento de progresso.",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop&crop=center",
-    link: "https://fitnesspro-app.com"
-  }
-];
+interface App {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  link: string;
+}
 
 const Index = () => {
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [apps, setApps] = useState<App[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user && !profile?.is_approved) {
+      navigate('/auth');
+      return;
+    }
+    fetchApps();
+  }, [user, profile, navigate]);
+
+  const fetchApps = async () => {
+    const { data, error } = await supabase
+      .from('apps')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching apps:', error);
+    } else {
+      setApps(data || []);
+    }
+    setLoading(false);
+  };
+
+  if (!user || !profile?.is_approved) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+        {/* Header */}
+        <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WebApps Gallery</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Descubra aplicações web incríveis</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <ThemeToggle />
+                <Button onClick={() => navigate('/auth')}>
+                  Fazer Login
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-6 py-12">
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Explore Aplicações
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"> Web Inovadoras</span>
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Descubra uma coleção curada de aplicações web modernas, cada uma projetada para resolver problemas específicos e melhorar sua produtividade.
+            </p>
+          </div>
+
+          {/* Public Apps Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {apps.slice(0, 3).map((app) => (
+              <AppCard
+                key={app.id}
+                name={app.name}
+                description={app.description}
+                image={app.image}
+                link={app.link}
+              />
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Faça login para ver todas as aplicações disponíveis
+            </p>
+            <Button
+              onClick={() => navigate('/auth')}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
+            >
+              Acessar Sistema
+            </Button>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 mt-20">
+          <div className="container mx-auto px-6 py-8">
+            <div className="text-center text-gray-600 dark:text-gray-400">
+              <p>&copy; 2024 WebApps Gallery. Todos os direitos reservados.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Carregando aplicações...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">WebApps Gallery</h1>
-              <p className="text-sm text-gray-600 mt-1">Descubra aplicações web incríveis</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WebApps Gallery</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Descubra aplicações web incríveis</p>
             </div>
-            <div className="text-sm text-gray-500">
-              {apps.length} aplicações disponíveis
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {apps.length} aplicações disponíveis
+              </div>
+              <ThemeToggle />
+              {profile?.is_admin && (
+                <Button
+                  onClick={() => navigate('/admin')}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              )}
+              <Button
+                onClick={signOut}
+                variant="outline"
+                size="sm"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>
@@ -68,11 +169,11 @@ const Index = () => {
       <main className="container mx-auto px-6 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Explore Aplicações
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"> Web Inovadoras</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Descubra uma coleção curada de aplicações web modernas, cada uma projetada para resolver problemas específicos e melhorar sua produtividade.
           </p>
         </div>
@@ -89,27 +190,12 @@ const Index = () => {
             />
           ))}
         </div>
-
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Tem uma aplicação para compartilhar?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Entre em contato conosco para incluir sua aplicação web em nossa galeria.
-            </p>
-            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105">
-              Enviar Aplicação
-            </button>
-          </div>
-        </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/80 backdrop-blur-md border-t border-gray-200 mt-20">
+      <footer className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 mt-20">
         <div className="container mx-auto px-6 py-8">
-          <div className="text-center text-gray-600">
+          <div className="text-center text-gray-600 dark:text-gray-400">
             <p>&copy; 2024 WebApps Gallery. Todos os direitos reservados.</p>
           </div>
         </div>
