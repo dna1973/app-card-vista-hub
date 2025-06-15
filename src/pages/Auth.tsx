@@ -10,7 +10,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user, profile } = useAuth();
+  const { signIn, signUp, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +46,11 @@ const Auth = () => {
     }
   };
 
+  const handleRefreshStatus = async () => {
+    await refreshProfile();
+    toast.success('Status atualizado!');
+  };
+
   if (user && !profile?.is_approved) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 flex items-center justify-center px-4">
@@ -56,9 +61,17 @@ const Auth = () => {
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Sua conta foi criada com sucesso, mas precisa ser aprovada por um administrador antes que você possa acessar o sistema.
           </p>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            Verificar Status
-          </Button>
+          <div className="space-y-4">
+            <Button onClick={handleRefreshStatus} variant="outline" className="w-full">
+              Verificar Status
+            </Button>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Email: {user.email}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Admin: {profile?.is_admin ? 'Sim' : 'Não'}
+            </p>
+          </div>
         </div>
       </div>
     );
