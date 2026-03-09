@@ -1,6 +1,6 @@
 # app-card-vista-hub
 
-Um hub de cartões interativos e gestão visual desenvolvido com tecnologias modernas de frontend.
+Um hub de cartões interativos e gestão visual desenvolvido com tecnologias modernas de frontend para organização de informações.
 
 ## 🚀 Demo
 
@@ -8,7 +8,7 @@ _Link não disponível._
 
 ## 🛠 Tecnologias
 
-`TypeScript` · `PLpgSQL` · `CSS` · `HTML` · `JavaScript` · `React` · `Vite` · `Tailwind CSS` · `shadcn/ui` · `Supabase` · `TanStack Query (React Query)` · `Lucide React (Ícones)`
+`TypeScript` · `PLpgSQL` · `CSS` · `HTML` · `JavaScript` · `React` · `Tailwind CSS` · `Vite Terminal` · `Supabase` · `shadcn/ui` · `TanStack Query` · `Lucide React`
 
 ## 📸 Screenshots
 
